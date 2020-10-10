@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/Lexscher/imagine/pkg/application"
-	"github.com/Lexscher/imagine/pkg/exithandler"
+	"github.com/lexscher/imagine/pkg/application"
+	"github.com/lexscher/imagine/pkg/exithandler"
 	"github.com/joho/godotenv"
 )
 
