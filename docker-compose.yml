@@ -1,0 +1,38 @@
+version: "3.7"
+
+volumes:
+  imaginevolume:
+    name: imagine-volume
+
+networks:
+  imaginenetwork:
+    name: imagine-network
+
+services:
+  pg:
+    image: postgres:12.0
+    restart: on-failure
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - imaginevolume:/var/lib/postgresql/data
+      - ./db/scripts:/docker-entrypoint-initdb.d/
+    networks:
+      - imaginenetwork
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - pg
+    volumes:
+      - ./:/app
+    ports:
+      - 7777:7777
+    networks:
+      - imaginenetwork
+    env_file:
+      - .env
+    entrypoint: ["/bin/bash", "./scripts/entrypoint.dev.sh"]
