@@ -1,26 +1,44 @@
 package main
 
 import (
-	"log"
-
+	"github.com/lexscher/imagine/cmd/api/router"
 	"github.com/lexscher/imagine/pkg/application"
 	"github.com/lexscher/imagine/pkg/exithandler"
+	"github.com/lexscher/imagine/pkg/logger"
+	"github.com/lexscher/imagine/pkg/server"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("Failed to load env vars")
+		logger.Info.Println("failed to load env vars")
 	}
 
 	app, err := application.Get()
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Error.Fatal(err.Error())
 	}
 
+	srv := server.
+			Get().
+			WithAddr(app.Cfg.GetAPIPort()).
+			WithRouter(router.Get(app)).
+			WithErrLogger(logger.Error)
+
+	go func() {
+		logger.Info.Printf("starting server on port %s", app.Cfg.GetAPIPort())
+		if err := srv.Start(); err != nil {
+			logger.Error.Fatal(err.Error())
+		}
+	}()
+
 	exithandler.Init(func() {
+		if err := srv.Close(); err != nil {
+			logger.Error.Println(err.Error())
+		}
+
 		if err := app.DB.Close(); err != nil {
-			log.Println(err.Error())
+			logger.Error.Println(err.Error())
 		}
 	})
 }
