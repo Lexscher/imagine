@@ -1,0 +1,22 @@
+CREATE OR REPLACE FUNCTION trigger_set_timestamp() 
+RETURNS TRIGGER AS $$ 
+BEGIN 
+  NEW.updated_at = NOW(); 
+  RETURN NEW; 
+  END; 
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE IF NOT EXISTS public.iuter 
+(
+	id SERIAL PRIMARY KEY NOT NULL,
+	username VARCHAR ( 50 ) UNIQUE NOT NULL,
+	password VARCHAR ( 75 ) NOT NULL,
+	email VARCHAR ( 255 ) UNIQUE NOT NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW() 
+);
+
+CREATE TRIGGER set_timestamp 
+BEFORE UPDATE ON iuter 
+FOR EACH ROW 
+EXECUTE PROCEDURE trigger_set_timestamp();
